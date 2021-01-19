@@ -1,3 +1,5 @@
+# TODO add auto load new packages. 
+
 install.packages(c(
   "gapminder", "ggforce", "globals", "openintro", "RSQLite", "shiny", 
   "shinycssloaders", "shinyFeedback", "shinythemes", "testthat", 
