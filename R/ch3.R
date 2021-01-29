@@ -1,4 +1,4 @@
-library(shiny)
+# library(shiny)
 
 
 # # ex1 
@@ -10,16 +10,15 @@ library(shiny)
 # 
 # 
 # ui <- fluidPage(
-#   
-# sliderInput("deadline", "When should we deliver?", value = lubridate::ymd("2020-09-17"), 
-#             timeFormat = "%F", min = lubridate::ymd("2020-09-16"), 
-#             max = lubridate::ymd("2020-09-23"))
-#   
+# 
+# sliderInput("deadline", "When should we deliver?", value = lubridate::ymd("2020-09-17"),
+#             timeFormat = "%F", min = lubridate::ymd("2020-09-16"), max = lubridate::ymd("2020-09-23"))
+# 
 # )
 # 
 # 
 # server <- function(input, output, session) {
-#   
+# 
 # }
 # 
 # shinyApp(ui, server)
@@ -36,14 +35,15 @@ library(shiny)
 #                      `West Coast` = list("WA", "OR", "CA"),
 #                      `Midwest` = list("MN", "WI", "IA"))
 #     ),
-#     textOutput("result")
+#     textOutput("state")
 #   ),
 #   server = function(input, output) {
-#     output$result <- renderText({
+#     output$state <- renderText({
 #       paste("You chose", input$state)
 #     })
 #   }
 # )
+
 
 
 # # ex4
@@ -149,6 +149,7 @@ library(shiny)
 #     )
 #   )
 # }
+# 
 # theme_demo("darkly")
 # theme_demo("flatly")
 # theme_demo("sandstone")
@@ -175,46 +176,50 @@ library(shiny)
 # shinyApp(ui, server)
 
 
-# 3.4.6
+# # 3.4.6
 # # ex1
 # 
 # ui <- fluidPage(
 #   fluidRow(
-#     column(6, 
+#     column(6,
 #            plotOutput("plot")
 #     ),
 #     column(6, 
-#            plotOutput("plot")
+#            plotOutput("plot1")
 #     )
 #   )
 # )
 # 
 # server <- function(input, output, session) {
 #   output$plot <- renderPlot(plot(1:5), res = 96)
+#   output$plot1 <- renderPlot(plot(1:5), res = 96)
 # }
 # 
 # shinyApp(ui, server)
 
 
-# ex2
-ui <- fluidPage(
-  theme = shinythemes::shinytheme("darkly"),
-  titlePanel("Central limit theorem"),
-  sidebarLayout(
-    sidebarPanel(
-      numericInput("m", "Number of samples:", 2, min = 1, max = 100)
-    ),
-    mainPanel(
-      plotOutput("hist")
-    ), position = "right",
-  )
-)
+# # ex2
+# ui <- fluidPage(
+#   theme = shinythemes::shinytheme("darkly"),
+#   titlePanel("Central limit theorem"),
+#   sidebarLayout(
+#     sidebarPanel(
+#       numericInput("m", "Number of samples:", 2, min = 1, max = 100)
+#     ),
+#     mainPanel(
+#       plotOutput("hist")
+#     ), position = "right",
+#   )
+# )
+# 
+# server <- function(input, output, session) {
+#   output$hist <- renderPlot({
+#     means <- replicate(1e4, mean(runif(input$m)))
+#     hist(means, breaks = 20)
+#   }, res = 96)
+# }
+# shinyApp(ui, server)
+# 
 
-server <- function(input, output, session) {
-  output$hist <- renderPlot({
-    means <- replicate(1e4, mean(runif(input$m)))
-    hist(means, breaks = 20)
-  }, res = 96)
-}
-shinyApp(ui, server)
-
+# https://shiny.rstudio.com/articles/debugging.html
+# shinyapps.io free account
