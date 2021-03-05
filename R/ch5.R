@@ -2,13 +2,13 @@ library(shiny)
 library(tidyverse)
 library(vroom)
 
-injuries <- vroom::vroom("../neiss/injuries.tsv.gz")
+injuries <- vroom::vroom(here::here("neiss/injuries.tsv.gz"))
 # injuries
 # 
-products <- vroom::vroom("../neiss/products.tsv")
+products <- vroom::vroom(here::here("neiss/products.tsv"))
 # products
 # 
-population <- vroom::vroom("../neiss/population.tsv")
+population <- vroom::vroom(here::here("neiss/population.tsv"))
 # population
 # 
 # selected <- injuries %>% filter(prod_code == 649)
@@ -345,13 +345,94 @@ population <- vroom::vroom("../neiss/population.tsv")
 # Ex 2 ----
 
 
-# Ex 3 ----
+# # Ex 3 ----
+# 
+# count_top <- function(df, var, n = 5) {
+#   df %>%
+#     mutate({{ var }} := fct_lump(fct_infreq({{ var }}), n = n)) %>%
+#     group_by({{ var }}) %>%
+#     summarise(n = as.integer(sum(weight)))
+# }
+# 
+# 
+# ui <- fluidPage(
+#   fluidRow(
+#     column(8,
+#            selectInput("code", "Product",
+#                        choices = setNames(products$prod_code, products$title),
+#                        width = "100%"
+#            )
+#     ),
+#     column(2, selectInput("y", "Y axis", c("rate", "count"))),
+#     column(2, sliderInput("length_table", "Table Length", min = 1L, max = 20L, value = 5L, step = 1L))
+#   ),
+#   fluidRow(
+#     column(4, tableOutput("diag")),
+#     column(4, tableOutput("body_part")),
+#     column(4, tableOutput("location"))
+#   ),
+#   fluidRow(
+#     column(12, plotOutput("age_sex"))
+#   ),
+#   fluidRow(
+#     column(2, actionButton("story", "Tell me a story")),
+#     column(10, textOutput("narrative"))
+#   )
+# )
+# 
+# 
+# server <- function(input, output, session) {
+#   
+#   selected <- reactive(injuries %>% filter(prod_code == input$code))
+# 
+#   table_length <- reactive(input$length_table)
+# 
+#   output$diag <- renderTable(count_top(selected(), diag, n = table_length()), width = "100%")
+#   output$body_part <- renderTable(count_top(selected(), body_part, n = table_length()), width = "100%")
+#   output$location <- renderTable(count_top(selected(), location, n = table_length()), width = "100%")
+#   
+#   
+#   summary <- reactive({
+#     selected() %>%
+#       count(age, sex, wt = weight) %>%
+#       left_join(population, by = c("age", "sex")) %>%
+#       mutate(rate = n / population * 1e4)
+#   })
+#   
+#   output$age_sex <- renderPlot({
+#     if (input$y == "count") {
+#       summary() %>%
+#         ggplot(aes(age, n, colour = sex)) +
+#         geom_line() +
+#         labs(y = "Estimated number of injuries")
+#     } else {
+#       summary() %>%
+#         ggplot(aes(age, rate, colour = sex)) +
+#         geom_line(na.rm = TRUE) +
+#         labs(y = "Injuries per 10,000 people")
+#     }
+#   }, res = 96)
+#   
+#   narrative_sample <- eventReactive(
+#     list(input$story, selected()),
+#     selected() %>% pull(narrative) %>% sample(1)
+#   )
+#   output$narrative <- renderText(narrative_sample())
+#   
+# }
+# 
+# shinyApp(ui, server)
+
+
+
+# Ex 4a ----
+# Provide a way to step through every narrative systematically with forward and backward buttons
 
 count_top <- function(df, var, n = 5) {
   df %>%
     mutate({{ var }} := fct_lump(fct_infreq({{ var }}), n = n)) %>%
     group_by({{ var }}) %>%
-    summarise(n = as.integer(sum(weight)))
+    summarise(n = as.integer(sum(weight)), .groups = "drop")
 }
 
 
@@ -377,6 +458,10 @@ ui <- fluidPage(
   fluidRow(
     column(2, actionButton("story", "Tell me a story")),
     column(10, textOutput("narrative"))
+  ),
+  fluidRow(
+    column(2, actionButton("forward", "Forward", class = "btn-info"),
+    actionButton("backward", "Backward", class = "btn-primary"))
   )
 )
 
@@ -413,22 +498,36 @@ server <- function(input, output, session) {
     }
   }, res = 96)
   
+  forward <- reactive({input$forward})
+  backward <- reactive({input$backward})
+  
   narrative_sample <- eventReactive(
-    list(input$story, selected()),
-    selected() %>% pull(narrative) %>% sample(1)
+    list(input$story, forward(), backward(), selected()),
+    selected() %>% select(narrative) %>% slice(forward()) %>% pull()
   )
   output$narrative <- renderText(narrative_sample())
+
   
-}
+    # narrative_sample <- eventReactive(
+  #   list(input$story, input$forward, input$backward, selected()),
+  #   selected() %>% select(narrative) %>% slice(input$forward) %>% pull()
+  # )
+  # output$narrative <- renderText(narrative_sample())
+  
+  }
 
 shinyApp(ui, server)
 
 
-
-# Ex 4a ----
-# Provide a way to step through every narrative systematically with forward and backward buttons
-
-
+# 
+# 
+# selected <- injuries %>% 
+#   filter(prod_code == 649)
+# 
+# narrative_sample <- selected %>% 
+#   select(narrative) %>% 
+#   slice(3) %>% 
+#   pull()
 
 # Ex 4b ----
 # Make the list of narratives “circular” so that advancing forward from the last narrative takes you to the first.
